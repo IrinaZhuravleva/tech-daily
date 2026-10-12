@@ -66,11 +66,16 @@
 <body>
 <main>
   <h1>Tech Daily</h1>
+  <p class="sub">A daily digest of AI, security, testing and dev news from the last <span id="days">14</span> days.</p>
   <span class="badge" id="status" hidden></span>
   <div class="cats" id="cats" role="group" aria-label="Categories"></div>
   <div class="controls">
     <input id="q" type="search" placeholder="Search titles…" aria-label="Search">
     <select id="src" aria-label="Source"><option value="">All sources</option></select>
+    <select id="period" aria-label="Period">
+      <option value="7">Last 7 days</option>
+      <option value="14" selected>Last 14 days</option>
+    </select>
   </div>
   <p class="sub" id="count" aria-live="polite"></p>
   <div id="list"></div>
@@ -103,15 +108,25 @@ async function load() {
 
 const strip = h => { const d = document.createElement("div"); d.innerHTML = h; return d.textContent.trim(); };
 
+function inPeriod(a, days) {
+  if (!a.published_at) return true;
+  return new Date(a.published_at) >= Date.now() - days * 864e5;
+}
+
 function render() {
-  const q = $("q").value.toLowerCase(), s = $("src").value;
-  const rows = all.filter(a => (!cat || (a.categories || []).includes(cat)) && (!s || a.source === s) && (!q || a.title.toLowerCase().includes(q)));
+  const q = $("q").value.toLowerCase(), s = $("src").value, days = Number($("period").value);
+  $("days").textContent = days;
+  const base = all.filter(a => inPeriod(a, days));
+  const counts = {};
+  for (const r of base) for (const c of r.categories || []) counts[c] = (counts[c] || 0) + 1;
+  for (const b of $("cats").children) b.querySelector(".n").textContent = b.dataset.cat ? (counts[b.dataset.cat] || 0) : base.length;
+  const rows = base.filter(a => (!cat || (a.categories || []).includes(cat)) && (!s || a.source === s) && (!q || a.title.toLowerCase().includes(q)));
   const list = $("list");
   list.replaceChildren();
   const shown = Math.min(rows.length, 200);
-  $("count").textContent = rows.length === all.length
-    ? `${all.length} articles`
-    : `${rows.length} of ${all.length} articles`;
+  $("count").textContent = rows.length === base.length
+    ? `${base.length} articles`
+    : `${rows.length} of ${base.length} articles`;
   if (rows.length > shown) $("count").textContent += ` (showing first ${shown})`;
   if (!rows.length) { list.innerHTML = '<div class="empty">Nothing found</div>'; return; }
   for (const a of rows.slice(0, 200)) {
@@ -153,16 +168,16 @@ load().then(rows => {
   all = rows;
   for (const s of [...new Set(rows.map(r => r.source))].sort()) $("src").add(new Option(s, s));
   const bar = $("cats");
-  const counts = {};
-  for (const r of rows) for (const c of r.categories || []) counts[c] = (counts[c] || 0) + 1;
-  for (const name of ["", ...Object.keys(counts).sort()]) {
+  const names = new Set();
+  for (const r of rows) for (const c of r.categories || []) names.add(c);
+  for (const name of ["", ...[...names].sort()]) {
     const b = document.createElement("button");
     b.className = "chip"; b.type = "button";
     b.dataset.cat = name;
     const label = document.createElement("span");
     label.textContent = name || "All";
     const n = document.createElement("span");
-    n.className = "n"; n.textContent = name ? counts[name] : rows.length;
+    n.className = "n";
     b.append(label, n);
     b.setAttribute("aria-pressed", String(name === cat));
     b.addEventListener("click", () => {
@@ -176,6 +191,7 @@ load().then(rows => {
 }).catch(e => showError("Error: " + e.message));
 $("q").addEventListener("input", render);
 $("src").addEventListener("change", render);
+$("period").addEventListener("change", render);
 </script>
 </body>
 </html>
