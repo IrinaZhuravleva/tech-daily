@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tech Daily</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#fafaf9; --fg:#1c1917; --muted:#78716c; --card:#fff; --line:#e7e5e4; --accent:#2563eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161513; --fg:#f5f5f4; --muted:#a8a29e; --card:#211f1d; --line:#33302d; --accent:#7aa2ff; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 16px; font-size:.9rem; }
+  .controls { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  input, select { font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  select { appearance:none; -webkit-appearance:none; padding-right:36px; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2378716c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; }
+  input { flex:1; min-width:180px; }
+  #list { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:900px) { #list { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px) { #list { grid-template-columns:1fr; } }
+  article { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  .thumb { aspect-ratio:16/9; width:100%; object-fit:cover; display:block; background:var(--line); }
+  .ph { aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:1.1rem; letter-spacing:.04em; }
+  .ph-AI { background:linear-gradient(135deg,#2563eb,#7c3aed); }
+  .ph-Security { background:linear-gradient(135deg,#dc2626,#7f1d1d); }
+  .ph-Testing { background:linear-gradient(135deg,#059669,#0f766e); }
+  .ph-Dev { background:linear-gradient(135deg,#d97706,#92400e); }
+  .ph-none { background:linear-gradient(135deg,#57534e,#292524); }
+  .body { padding:12px 14px 14px; display:flex; flex-direction:column; flex:1; }
+  article a { color:var(--fg); font-weight:600; text-decoration:none; line-height:1.3; }
+  article a:hover { color:var(--accent); text-decoration:underline; }
+  .meta { color:var(--muted); font-size:.8rem; margin-top:auto; padding-top:8px; }
+  .sum { color:var(--muted); font-size:.88rem; margin:6px 0 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .badge { display:inline-flex; align-items:center; gap:7px; font-size:.78rem; font-weight:600; padding:3px 11px 3px 9px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--muted); cursor:default; }
+  .badge[hidden] { display:none; }
+  .badge { margin:0 0 12px; }
+  .badge::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--muted); }
+  .badge { color:#b91c1c; border-color:#fca5a5; }
+  .badge::before { background:#ef4444; }
+  @media (prefers-color-scheme: dark) {
+        .badge { color:#f87171; border-color:#7f1d1d; }
+  }
+  .cats { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+  .chip { --c:var(--muted); font:inherit; font-size:.88rem; font-weight:500; display:inline-flex; align-items:center; gap:8px; padding:5px 6px 5px 12px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--fg); cursor:pointer; transition:border-color .15s, background .15s; }
+  .chip:hover { border-color:var(--c); }
+  .chip::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--c); }
+  .chip .n { min-width:26px; text-align:center; font-size:.75rem; font-weight:600; font-variant-numeric:tabular-nums; padding:2px 8px; border-radius:999px; background:var(--line); color:var(--muted); }
+  .chip[data-cat="AI"] { --c:#7c3aed; }
+  .chip[data-cat="Security"] { --c:#dc2626; }
+  .chip[data-cat="Testing"] { --c:#059669; }
+  .chip[data-cat="Dev"] { --c:#d97706; }
+  .chip[aria-pressed="true"] { background:var(--c); border-color:var(--c); color:#fff; }
+  .chip[aria-pressed="true"]::before { background:#fff; }
+  .chip[aria-pressed="true"] .n { background:rgba(255,255,255,.25); color:#fff; }
+  .chip:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .tag { font-size:.7rem; border:1px solid var(--line); border-radius:4px; padding:0 5px; margin-left:6px; }
+  .empty { grid-column:1/-1; color:var(--muted); text-align:center; padding:32px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tech Daily</h1>
+  <span class="badge" id="status" hidden></span>
+  <div class="cats" id="cats" role="group" aria-label="Categories"></div>
+  <div class="controls">
+    <input id="q" type="search" placeholder="Search titles…" aria-label="Search">
+    <select id="src" aria-label="Source"><option value="">All sources</option></select>
+  </div>
+  <p class="sub" id="count" aria-live="polite"></p>
+  <div id="list"></div>
+</main>
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let all = [];
+let cat = "";
+
+function showError(text) {
+  const el = $("status");
+  el.textContent = text;
+  el.hidden = false;
+}
+
+async function load() {
+  const c = window.NEWS_CONFIG || {};
+  if (c.SUPABASE_URL && c.SUPABASE_ANON_KEY) {
+    const r = await fetch(`${c.SUPABASE_URL}/rest/v1/articles?select=url,source,title,summary,published_at,categories,image&order=published_at.desc.nullslast&limit=500`,
+      { headers: { apikey: c.SUPABASE_ANON_KEY, Authorization: `Bearer ${c.SUPABASE_ANON_KEY}` } });
+    if (!r.ok) throw new Error("Supabase: " + r.status);
+    
+    return r.json();
+  }
+  const r = await fetch("data.json");
+  if (!r.ok) throw new Error("data.json not found");
+  return r.json();
+}
+
+const strip = h => { const d = document.createElement("div"); d.innerHTML = h; return d.textContent.trim(); };
+
+function render() {
+  const q = $("q").value.toLowerCase(), s = $("src").value;
+  const rows = all.filter(a => (!cat || (a.categories || []).includes(cat)) && (!s || a.source === s) && (!q || a.title.toLowerCase().includes(q)));
+  const list = $("list");
+  list.replaceChildren();
+  const shown = Math.min(rows.length, 200);
+  $("count").textContent = rows.length === all.length
+    ? `${all.length} articles`
+    : `${rows.length} of ${all.length} articles`;
+  if (rows.length > shown) $("count").textContent += ` (showing first ${shown})`;
+  if (!rows.length) { list.innerHTML = '<div class="empty">Nothing found</div>'; return; }
+  for (const a of rows.slice(0, 200)) {
+    const el = document.createElement("article");
+    const cats = a.categories || [];
+    const placeholder = () => {
+      const ph = document.createElement("div");
+      ph.className = "ph ph-" + (cats[0] || "none");
+      ph.textContent = cats[0] || a.source;
+      return ph;
+    };
+    let media;
+    if (a.image) {
+      media = document.createElement("img");
+      media.className = "thumb"; media.src = a.image; media.alt = ""; media.loading = "lazy";
+      media.referrerPolicy = "no-referrer";
+      media.addEventListener("error", () => media.replaceWith(placeholder()));
+    } else {
+      media = placeholder();
+    }
+    const body = document.createElement("div");
+    body.className = "body";
+    const link = document.createElement("a");
+    link.href = a.url; link.target = "_blank"; link.rel = "noopener"; link.textContent = a.title || a.url;
+    body.append(link);
+    const sum = strip(a.summary || "").slice(0, 220);
+    if (sum) { const p = document.createElement("p"); p.className = "sum"; p.textContent = sum; body.append(p); }
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    meta.textContent = a.source + (a.published_at ? " · " + new Date(a.published_at).toLocaleDateString() : "");
+    for (const c of cats) { const t = document.createElement("span"); t.className = "tag"; t.textContent = c; meta.append(t); }
+    body.append(meta);
+    el.append(media, body);
+    list.append(el);
+  }
+}
+
+load().then(rows => {
+  all = rows;
+  for (const s of [...new Set(rows.map(r => r.source))].sort()) $("src").add(new Option(s, s));
+  const bar = $("cats");
+  const counts = {};
+  for (const r of rows) for (const c of r.categories || []) counts[c] = (counts[c] || 0) + 1;
+  for (const name of ["", ...Object.keys(counts).sort()]) {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button";
+    b.dataset.cat = name;
+    const label = document.createElement("span");
+    label.textContent = name || "All";
+    const n = document.createElement("span");
+    n.className = "n"; n.textContent = name ? counts[name] : rows.length;
+    b.append(label, n);
+    b.setAttribute("aria-pressed", String(name === cat));
+    b.addEventListener("click", () => {
+      cat = name;
+      for (const x of bar.children) x.setAttribute("aria-pressed", String(x === b));
+      render();
+    });
+    bar.append(b);
+  }
+  render();
+}).catch(e => showError("Error: " + e.message));
+$("q").addEventListener("input", render);
+$("src").addEventListener("change", render);
+</script>
+</body>
+</html>

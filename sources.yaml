@@ -1,0 +1,74 @@
+# Add a source = add one entry. `name` goes to the `source` column,
+# `category` is the default category for everything from that source.
+# `keywords` add extra categories when the TITLE matches (case-insensitive regex).
+keywords:
+  AI:
+    - '\bAI\b|\bLLMs?\b|machine learning|neural|\bGPT|claude|gemini|openai|anthropic|agentic|deep learning|chatbot'
+  Security:
+    - 'security|vulnerab|ransomware|malware|\bCVE-|breach|exploit|phishing|zero-day|hack|cyber|encryption|backdoor'
+  Testing:
+    - 'playwright|cypress|selenium|test automation|\be2e\b|end-to-end|unit test|\bQA\b|testing|flaky|\btests?\b'
+
+sources:
+  - name: MIT News (AI)
+    category: AI
+    url: https://news.mit.edu/rss/topic/artificial-intelligence2
+  - name: MIT Technology Review
+    category: AI
+    url: https://www.technologyreview.com/feed/
+    check_paywall: true   # opens each new article page, skips subscriber-only
+  - name: Google AI Blog
+    category: AI
+    url: https://blog.google/technology/ai/rss/
+  - name: OpenAI Blog
+    og_image: true        # no image in the feed: take og:image from the article page
+    category: AI
+    url: https://openai.com/news/rss.xml
+  - name: Hugging Face Blog
+    og_image: true        # no image in the feed: take og:image from the article page
+    category: AI
+    url: https://huggingface.co/blog/feed.xml
+  - name: arXiv cs.AI
+    category: AI
+    url: https://rss.arxiv.org/rss/cs.AI
+  - name: arXiv cs.LG
+    category: AI
+    url: https://rss.arxiv.org/rss/cs.LG
+  # Security
+  - name: Krebs on Security
+    category: Security
+    url: https://krebsonsecurity.com/feed/
+  - name: The Hacker News
+    category: Security
+    url: https://feeds.feedburner.com/TheHackersNews
+  - name: Schneier on Security
+    category: Security
+    url: https://www.schneier.com/feed/atom/
+  - name: BleepingComputer
+    og_image: true        # no image in the feed: take og:image from the article page
+    category: Security
+    url: https://www.bleepingcomputer.com/feed/
+  - name: Dark Reading
+    category: Security
+    url: https://www.darkreading.com/rss.xml
+  # Testing
+  - name: Google Testing Blog
+    category: Testing
+    url: https://testing.googleblog.com/feeds/posts/default
+  - name: Test Guild
+    og_image: true        # no image in the feed: take og:image from the article page
+    category: Testing
+    url: https://testguild.com/feed/
+  - name: Cypress Blog
+    og_image: true
+    category: Testing
+    url: https://www.cypress.io/blog/rss.xml
+  - name: Playwright Releases
+    skip_image: true      # feed only has the author's tiny avatar
+    og_image: true        # use the release card from the page instead
+    category: Testing
+    url: https://github.com/microsoft/playwright/releases.atom
+  # General dev
+  - name: Martin Fowler
+    category: Dev
+    url: https://martinfowler.com/feed.atom
