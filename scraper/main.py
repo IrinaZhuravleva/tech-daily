@@ -4,7 +4,7 @@ import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -103,16 +103,22 @@ def categorize(source, title, keywords):
     return sorted(cats)
 
 
-def fetch_source(source, keywords=None):
+def fetch_source(source, keywords=None, max_age_days=None):
     resp = requests.get(source["url"], headers={"User-Agent": "news-scraper/1.0"}, timeout=30)
     resp.raise_for_status()
     feed = feedparser.parse(resp.content)
     if feed.bozo and not feed.entries:
         raise RuntimeError(f"feed error: {feed.bozo_exception}")
+    cutoff = (
+        datetime.now(timezone.utc) - timedelta(days=max_age_days) if max_age_days else None
+    )
     rows = []
     for e in feed.entries:
         url = e.get("link")
         if not url:
+            continue
+        published = parse_date(e)
+        if cutoff and published and datetime.fromisoformat(published) < cutoff:
             continue
         title = (e.get("title") or "").strip()
         rows.append(
@@ -123,7 +129,7 @@ def fetch_source(source, keywords=None):
                 "title": title,
                 "image": None if source.get("skip_image") else clean_image(entry_image(e)),
                 "summary": (e.get("summary") or "").strip(),
-                "published_at": parse_date(e),
+                "published_at": published,
             }
         )
     return rows
@@ -139,7 +145,7 @@ def main():
     failed = 0
     for source in sources:
         try:
-            rows = fetch_source(source, keywords)
+            rows = fetch_source(source, keywords, config.get("max_age_days"))
             if source.get("check_paywall"):
                 known = existing_urls(client, [r["url"] for r in rows])
                 before = len(rows)

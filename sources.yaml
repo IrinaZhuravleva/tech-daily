@@ -1,6 +1,9 @@
 # Add a source = add one entry. `name` goes to the `source` column,
 # `category` is the default category for everything from that source.
 # `keywords` add extra categories when the TITLE matches (case-insensitive regex).
+# Skip articles older than this many days (articles without a date are kept).
+max_age_days: 14
+
 keywords:
   AI:
     - '\bAI\b|\bLLMs?\b|machine learning|neural|\bGPT|claude|gemini|openai|anthropic|agentic|deep learning|chatbot'
