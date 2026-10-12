@@ -1,96 +1,96 @@
 # news-scraper
 
-Личная лента новостей: собирает статьи из RSS-источников (AI, безопасность, тестирование, разработка), раскладывает их по категориям и показывает на одной странице с поиском и фильтрами.
+A personal news feed: collects articles from RSS sources (AI, security, testing, development), sorts them into categories, and shows them on a single page with search and filters.
 
-Около 150 свежих статей (за последние 14 дней) из 15 источников. Для ежедневного чтения этого достаточно, поэтому база данных пока не подключена (см. «Возможности для расширения»).
+About 150 fresh articles (from the last 14 days) from 15 sources. That is enough for daily reading, so no database is connected yet (see "Possible extensions").
 
-## Как это работает
+## How it works
 
 ```
 sources.yaml ──► scraper/export_sample.py ──► data.json ──► index.html
- (источники,      (скачивает RSS, ставит      (статьи)      (страница с поиском
-  категории)       категории, убирает                         и фильтрами)
-                   платные статьи)
+ (sources,        (downloads RSS, assigns     (articles)    (page with search
+  categories)      categories, drops                         and filters)
+                   paywalled articles)
 ```
 
-## Быстрый старт
+## Quick start
 
 ```bash
 pip install -r requirements.txt
-python scraper/export_sample.py     # собирает data.json (до 30 последних статей с каждого источника)
-python -m http.server 8765          # затем открыть http://127.0.0.1:8765/index.html
+python scraper/export_sample.py     # builds data.json (up to 30 latest articles per source)
+python -m http.server 8765          # then open http://127.0.0.1:8765/index.html
 ```
 
-Сервер нужен потому, что браузер не даёт странице прочитать `data.json` по `file://`.
-Чтобы обновить ленту локально, запустите `export_sample.py` ещё раз и перезагрузите страницу.
+A server is needed because browsers don't let a page read `data.json` over `file://`.
+To refresh the feed locally, run `export_sample.py` again and reload the page.
 
-## Автообновление и публикация (GitHub Actions + Pages)
+## Auto-update and publishing (GitHub Actions + Pages)
 
-Workflow `.github/workflows/publish.yml` каждый день в 06:00 UTC (а также при пуше в `main` и по кнопке) собирает `data.json` и публикует сайт на GitHub Pages. Серверы и секреты не нужны.
+The workflow `.github/workflows/publish.yml` runs every day at 06:00 UTC (and on pushes to `main` and on manual trigger), builds `data.json`, and publishes the site to GitHub Pages. No servers or secrets required.
 
-Один раз настроить:
-1. Запушить проект в репозиторий GitHub (ветка `main`).
+One-time setup:
+1. Push the project to a GitHub repository (`main` branch).
 2. Settings → Pages → Build and deployment → Source: **GitHub Actions**.
-3. Actions → «Update news and publish site» → Run workflow. Адрес сайта появится в шаге deploy.
+3. Actions → "Update news and publish site" → Run workflow. The site URL appears in the deploy step.
 
-`data.json` в репозиторий не коммитится: его каждый раз создаёт workflow.
+`data.json` is not committed to the repository: the workflow generates it each time.
 
-## Источники
+## Sources
 
-| Категория | Источники |
+| Category | Sources |
 |---|---|
 | AI | MIT News (AI), MIT Technology Review, Google AI Blog, OpenAI Blog, Hugging Face Blog |
 | Security | Krebs on Security, The Hacker News, Schneier on Security, BleepingComputer, Dark Reading |
 | Testing | Google Testing Blog, Test Guild, Cypress Blog, Playwright Releases |
 | Dev | Martin Fowler |
 
-Чтобы добавить источник, допишите в `sources.yaml` блок с `name`, `category` и `url` (адрес RSS/Atom-фида).
+To add a source, append a block to `sources.yaml` with `name`, `category`, and `url` (the RSS/Atom feed address).
 
-## Свежесть
+## Freshness
 
-В ленту попадают статьи не старше 14 дней (`max_age_days` в `sources.yaml`), но не больше 30 с источника. Статьи без даты не отбрасываются.
+Only articles no older than 14 days (`max_age_days` in `sources.yaml`) are included, up to 30 per source. Articles without a date are kept.
 
-## Категории
+## Categories
 
-У статьи может быть несколько категорий. Они ставятся двумя способами:
-1. **Категория источника** – поле `category` в `sources.yaml`.
-2. **Ключевые слова в заголовке** – регулярные выражения в блоке `keywords` в `sources.yaml`. Например, статья о взломе ИИ-модели попадёт в AI и в Security.
+An article can have several categories. They are assigned in two ways:
+1. **Source category**: the `category` field in `sources.yaml`.
+2. **Title keywords**: regular expressions in the `keywords` block of `sources.yaml`. For example, an article about hacking an AI model lands in both AI and Security.
 
-## Платные статьи
+## Paywalled articles
 
-Для источников с `check_paywall: true` (сейчас MIT Technology Review) скрипт открывает страницу статьи и ищет маркеры платного доступа: любой непустой `paywallType` (`subscriber-only`, `metered` – ограниченное число бесплатных статей) или `isAccessibleForFree: false`. Такие статьи в ленту не попадают. Если страница не открылась, статья остаётся в ленте.
+For sources with `check_paywall: true` (currently MIT Technology Review), the script opens the article page and looks for paywall markers: any non-empty `paywallType` (`subscriber-only`, `metered` for a limited number of free articles) or `isAccessibleForFree: false`. Such articles are left out of the feed. If the page fails to load, the article stays in the feed.
 
-## Страница (`index.html`)
+## The page (`index.html`)
 
-- Карточки по 3 в ряд (2 на планшете, 1 на телефоне) с картинкой, заголовком, описанием, источником и датой.
-- Картинки берутся из фида; если их там нет, из `og:image` страницы статьи (`og_image: true` в `sources.yaml`). Если картинки нет совсем, показывается цветная заглушка категории. Сами картинки не скачиваются, хранятся только ссылки.
-- Поиск по заголовкам.
-- Фильтр по категориям (со счётчиками), по источнику и по периоду (7 или 14 дней). Счётчики пересчитываются при смене периода.
-- Количество статей над списком.
-- Светлая и тёмная тема.
+- Cards in 3 columns (2 on tablet, 1 on phone) with image, title, description, source, and date.
+- Images come from the feed; if missing, from the article page's `og:image` (`og_image: true` in `sources.yaml`). If there is no image at all, a colored category placeholder is shown. Images are not downloaded, only links are stored.
+- Search by title.
+- Filters by category (with counters), by source, and by period (7 or 14 days). Counters are recalculated when the period changes.
+- Article count above the list.
+- Light and dark themes.
 
-## Структура проекта
+## Project structure
 
-| Файл | Назначение |
+| File | Purpose |
 |---|---|
-| `sources.yaml` | Источники, категории, ключевые слова |
-| `scraper/main.py` | Скачивание фидов, категории, проверка платных статей, запись в БД |
-| `scraper/export_sample.py` | Сборка `data.json` без базы данных |
-| `index.html`, `config.js`, `favicon.svg` | Страница с карточками статей и её иконка |
-| `data.json` | Собранные статьи (генерируется) |
-| `schema.sql` | Схема таблицы для Supabase (на будущее) |
-| `.github/workflows/publish.yml` | Ежедневный сбор и публикация на GitHub Pages |
-| `requirements-db.txt` | Доп. зависимость для записи в Supabase (на будущее) |
+| `sources.yaml` | Sources, categories, keywords |
+| `scraper/main.py` | Feed download, categories, paywall check, writing to the DB |
+| `scraper/export_sample.py` | Builds `data.json` without a database |
+| `index.html`, `config.js`, `favicon.svg` | Article card page and its icon |
+| `data.json` | Collected articles (generated) |
+| `schema.sql` | Table schema for Supabase (for the future) |
+| `.github/workflows/publish.yml` | Daily collection and publishing to GitHub Pages |
+| `requirements-db.txt` | Extra dependency for writing to Supabase (for the future) |
 
-## Возможности для расширения
+## Possible extensions
 
-Сейчас лента живёт в `data.json` и обновляется вручную. Если понадобится больше, проект уже подготовлен:
+For now the feed lives in `data.json` and is rebuilt on each run. If you need more, the project is already prepared:
 
-- **База данных (Supabase, бесплатный Postgres 500 МБ).** Накопление истории статей, дедупликация по URL, поиск по всему архиву. Схема в `schema.sql`, запись статей в `scraper/main.py`.
-  1. Создать проект на supabase.com и выполнить `schema.sql` в SQL editor.
-  2. `pip install -r requirements-db.txt`, затем `SUPABASE_URL=... SUPABASE_KEY=... python scraper/main.py` (нужен ключ **service_role**, держать его в секрете).
-  3. Чтобы страница читала из базы, вписать `SUPABASE_URL` и публичный `anon`-ключ в `config.js`. Политика чтения для `anon` есть в конце `schema.sql`.
-- **Запись в базу по расписанию.** Добавить в `publish.yml` шаг `python scraper/main.py` с секретами `SUPABASE_URL` и `SUPABASE_KEY`, чтобы копить архив статей.
-- **Больше источников и категорий.** Cloud/DevOps, Data и другие: достаточно добавить блоки в `sources.yaml`.
-- **Другое хранилище.** Вместо Supabase можно взять Cloudflare R2 (10 ГБ бесплатно) для сырых статей и JSON.
-- **MCP-сервер.** Отдавать новости в Claude через MCP поверх базы данных.
+- **Database (Supabase, free 500 MB Postgres).** Keep article history, deduplicate by URL, search the whole archive. Schema in `schema.sql`, article writing in `scraper/main.py`.
+  1. Create a project at supabase.com and run `schema.sql` in the SQL editor.
+  2. `pip install -r requirements-db.txt`, then `SUPABASE_URL=... SUPABASE_KEY=... python scraper/main.py` (needs the **service_role** key; keep it secret).
+  3. To make the page read from the database, put `SUPABASE_URL` and the public `anon` key into `config.js`. The read policy for `anon` is at the end of `schema.sql`.
+- **Scheduled DB writes.** Add a `python scraper/main.py` step to `publish.yml` with `SUPABASE_URL` and `SUPABASE_KEY` secrets to build up an article archive.
+- **More sources and categories.** Cloud/DevOps, Data, and others: just add blocks to `sources.yaml`.
+- **Other storage.** Instead of Supabase, use Cloudflare R2 (10 GB free) for raw articles and JSON.
+- **MCP server.** Serve the news to Claude via MCP on top of the database.
