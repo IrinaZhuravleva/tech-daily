@@ -2,7 +2,7 @@
 
 Личная лента новостей: собирает статьи из RSS-источников (AI, безопасность, тестирование, разработка), раскладывает их по категориям и показывает на одной странице с поиском и фильтрами.
 
-Около 360 свежих статей из 16 источников. Для ежедневного чтения этого достаточно, поэтому база данных пока не подключена (см. «Возможности для расширения»).
+Около 300 свежих статей из 15 источников. Для ежедневного чтения этого достаточно, поэтому база данных пока не подключена (см. «Возможности для расширения»).
 
 ## Как это работает
 
@@ -39,7 +39,7 @@ Workflow `.github/workflows/publish.yml` каждый день в 06:00 UTC (а 
 
 | Категория | Источники |
 |---|---|
-| AI | MIT News (AI), MIT Technology Review, Google AI Blog, OpenAI Blog, Hugging Face Blog, arXiv cs.AI, arXiv cs.LG |
+| AI | MIT News (AI), MIT Technology Review, Google AI Blog, OpenAI Blog, Hugging Face Blog |
 | Security | Krebs on Security, The Hacker News, Schneier on Security, BleepingComputer, Dark Reading |
 | Testing | Google Testing Blog, Test Guild, Cypress Blog, Playwright Releases |
 | Dev | Martin Fowler |

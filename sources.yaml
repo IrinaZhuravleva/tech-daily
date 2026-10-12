@@ -28,12 +28,6 @@ sources:
     og_image: true        # no image in the feed: take og:image from the article page
     category: AI
     url: https://huggingface.co/blog/feed.xml
-  - name: arXiv cs.AI
-    category: AI
-    url: https://rss.arxiv.org/rss/cs.AI
-  - name: arXiv cs.LG
-    category: AI
-    url: https://rss.arxiv.org/rss/cs.LG
   # Security
   - name: Krebs on Security
     category: Security
