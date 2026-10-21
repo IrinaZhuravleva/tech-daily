@@ -28,6 +28,19 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Fetch feeds -> data.json
         run: python scraper/export_sample.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: E2E tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
       - name: Assemble site
         run: |
           mkdir site

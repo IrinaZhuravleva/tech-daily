@@ -35,6 +35,25 @@ One-time setup:
 
 `data.json` is not committed to the repository: the workflow generates it each time.
 
+## E2E tests
+
+Playwright tests live in `tests/e2e`. The page tests mock `data.json` with a fixed dataset, so they don't depend on the network or on live RSS feeds.
+
+```bash
+npm install
+npx playwright install chromium
+npm test            # starts a local server automatically
+npm run test:ui     # interactive mode
+```
+
+| File | What it checks |
+|---|---|
+| `feed.spec.ts` | rendering, category counters, search, source and period filters, combined filters, links, HTML-stripped summaries, image fallback, empty and error states |
+| `responsive.spec.ts` | one column and no horizontal scroll on a phone (Pixel 7) |
+| `data-contract.spec.ts` | the real `data.json` from the scraper: required fields, unique URLs, 14-day limit (skipped if the file is missing) |
+
+In CI the tests run after `data.json` is built and before deploy, so a failing test blocks publishing.
+
 ## Sources
 
 | Category | Sources |
@@ -78,6 +97,7 @@ For sources with `check_paywall: true` (currently MIT Technology Review), the sc
 | `scraper/export_sample.py` | Builds `data.json` without a database |
 | `index.html`, `config.js`, `favicon.svg` | Article card page and its icon |
 | `data.json` | Collected articles (generated) |
+| `tests/e2e/`, `playwright.config.ts` | Playwright end-to-end tests |
 | `schema.sql` | Table schema for Supabase (for the future) |
 | `.github/workflows/publish.yml` | Daily collection and publishing to GitHub Pages |
 | `requirements-db.txt` | Extra dependency for writing to Supabase (for the future) |
