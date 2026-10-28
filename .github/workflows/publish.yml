@@ -45,6 +45,10 @@ jobs:
         run: |
           mkdir site
           cp index.html config.js data.json favicon.svg site/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -59,3 +63,13 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-surge:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+      - run: npx --yes surge ./site my-digest.surge.sh --token ${{ secrets.SURGE_TOKEN }}
