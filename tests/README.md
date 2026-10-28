@@ -11,7 +11,9 @@ The site is a static page (`index.html`) that loads `data.json` and renders arti
 | `e2e/feed.spec.ts` | Rendering and article count; category chips and counters (an article with several categories counts in each); filters by category, search, source and period (7 / 14 days); combined filters; article links (`target=_blank`, `rel=noopener`); HTML stripped from summaries; category placeholder when there is no image; fallback to the placeholder when an image fails to load; empty result, empty feed, and the error badge when `data.json` cannot be loaded |
 | `e2e/responsive.spec.ts` | One column and no horizontal scroll on a phone (Pixel 7). Runs only in the `mobile` project |
 | `e2e/data-contract.spec.ts` | The real `data.json` built by the scraper: non-empty, required fields, valid URLs and dates, unique URLs, nothing older than 14 days. Skipped if `data.json` does not exist |
-| `e2e/fixtures.ts` | Shared test data and the `feed` fixture (see below) |
+| `support/articles.ts` | Fixed test dataset (`ARTICLES`) |
+| `support/mocks.ts` | `mockData()`: mocks `data.json` and images |
+| `support/fixtures.ts` | The `feed` fixture and re-exported `test` / `expect` |
 
 ## How it works
 
@@ -50,7 +52,7 @@ In `.github/workflows/publish.yml` the tests run after `data.json` is built and 
 
 ## Writing new tests
 
-- Import `test` and `expect` from `./fixtures`, not from `@playwright/test`, to get the `feed` fixture.
+- Import `test` and `expect` from `../support/fixtures`, not from `@playwright/test`, to get the `feed` fixture.
 - Take `feed` in the test arguments to get the page already loaded with the fixture data. Use plain `page` plus `mockData(page, ...)` when you need other data (empty, error status).
-- To change the dataset, edit `ARTICLES` in `fixtures.ts`. Counts in `feed.spec.ts` (8 articles, 4 AI, and so on) depend on it.
+- To change the dataset, edit `ARTICLES` in `support/articles.ts`. Counts in `feed.spec.ts` (8 articles, 4 AI, and so on) depend on it.
 - Category chips are found by `data-cat`: `.chip[data-cat="AI"]`. The chip text also contains a counter, so matching by text is fragile.

@@ -1,4 +1,4 @@
-import { test, expect, mockData } from "./fixtures";
+import { test, expect, mockData } from "../support/fixtures";
 
 const chip = (page: import("@playwright/test").Page, name: string) =>
   page.locator(`.chip[data-cat="${name}"]`);

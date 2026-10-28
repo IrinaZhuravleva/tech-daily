@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect } from "../support/fixtures";
 
 // Runs in the "mobile" project (Pixel 7, 412px wide) -> single column.
 test("cards are stacked in one column on a phone", async ({ feed }) => {
